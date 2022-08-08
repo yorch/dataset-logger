@@ -121,12 +121,12 @@ export class DataSetLogger {
   }
 
   setTimeout() {
-    if (this.isClosed) {
-      return;
-    }
-
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
+    }
+
+    if (this.isClosed) {
+      return;
     }
 
     this.timeoutId = setTimeout(() => {
@@ -145,14 +145,14 @@ export class DataSetLogger {
   }
 
   private async sendRequest() {
+    this.setTimeout();
+
     if (this.queue.length === 0) {
       return false;
     }
 
     const events = this.queue;
     this.queue = [];
-
-    this.setTimeout();
 
     try {
       const { body } = await got.post<{ message: string; status: string }>(this.url, {

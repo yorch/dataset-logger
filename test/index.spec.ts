@@ -2,12 +2,14 @@ import { DataSetLogger } from '../src';
 
 describe('index', () => {
   describe('DataSetLogger', () => {
-    it('should instantiate the logger', () => {
-      const result = new DataSetLogger({
+    it('should instantiate the logger', async () => {
+      const logger = new DataSetLogger({
         apiKey: '1234',
       });
 
-      expect(typeof result.log).toEqual('function');
+      expect(typeof logger.log).toEqual('function');
+
+      await logger.close();
     });
   });
 });
