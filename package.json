@@ -1,7 +1,7 @@
 {
   "name": "dataset-logger",
-  "version": "0.0.0-development",
-  "description": "A template for creating npm packages using TypeScript and VSCode",
+  "version": "0.0.1",
+  "description": "DataSet NodeJS Logger",
   "main": "./lib/src/index.js",
   "files": [
     "lib/**/*"
