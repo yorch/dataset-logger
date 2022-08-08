@@ -45,6 +45,9 @@
     "url": "https://github.com/yorch/dataset-logger/issues"
   },
   "homepage": "https://github.com/yorch/dataset-logger#readme",
+  "dependencies": {
+    "got": "^11.8.5"
+  },
   "devDependencies": {
     "@ryansonshine/commitizen": "^4.2.8",
     "@ryansonshine/cz-conventional-changelog": "^3.3.4",
