@@ -1,6 +1,6 @@
 {
   "name": "dataset-logger",
-  "version": "0.0.1",
+  "version": "0.0.0-development",
   "description": "DataSet NodeJS Logger",
   "main": "./lib/src/index.js",
   "files": [
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yorch/dataset-logger.git"
+    "url": "https://github.com/yorch/dataset-logger.git"
   },
   "license": "MIT",
   "author": {
