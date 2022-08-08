@@ -1,4 +1,4 @@
-# DataSet Logger
+# DataSet NodeJS Logger
 
 [![npm package][npm-img]][npm-url]
 [![Build Status][build-img]][build-url]
