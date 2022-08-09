@@ -88,6 +88,8 @@ export class DataSetLogger {
 
     this.apiKey = options.apiKey;
 
+    this.sessionInfo = options.sessionInfo;
+
     this.serverUrl = options.serverUrl || DEFAULT_DATASET_URL;
 
     this.onErrorHandler = options.onErrorHandler || (() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
