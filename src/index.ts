@@ -6,6 +6,13 @@ enum ADD_EVENT_API_STATUS {
   BAD_PARAM = 'error/client/badParam',
 }
 
+export enum DataSetEventSeverity {
+  INFO = 3,
+  WARN = 4,
+  ERROR = 5,
+  DANGER = 6,
+}
+
 export type DataSetEventAttributes = Record<string, unknown>;
 
 export type DataSetEvent = {
@@ -18,7 +25,7 @@ export type DataSetEvent = {
   // warn: severityLevel === 4,
   // error: severityLevel === 5,
   // danger: severityLevel > 5,
-  sev?: number;
+  sev?: number | DataSetEventSeverity;
   // Event attributes
   attrs: DataSetEventAttributes;
 };
