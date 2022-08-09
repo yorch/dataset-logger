@@ -6,12 +6,6 @@ enum ADD_EVENT_API_STATUS {
   BAD_PARAM = 'error/client/badParam',
 }
 
-// info: severityLevel <= 3,
-// warn: severityLevel === 4,
-// error: severityLevel === 5,
-// danger: severityLevel > 5,
-
-// export type DataSetEventAttributes = { [Key in string]?: JsonValue | Date };
 export type DataSetEventAttributes = Record<string, unknown>;
 
 export type DataSetEvent = {
@@ -19,7 +13,13 @@ export type DataSetEvent = {
   thread?: string;
   // Event timestamp (nanoseconds since 1/1/1970)
   ts: number;
+  // Severity level of the event
+  // info: severityLevel <= 3,
+  // warn: severityLevel === 4,
+  // error: severityLevel === 5,
+  // danger: severityLevel > 5,
   sev?: number;
+  // Event attributes
   attrs: DataSetEventAttributes;
 };
 
@@ -109,12 +109,16 @@ export class DataSetLogger {
     this.setTimeout();
   }
 
-  log(event: DataSetEvent) {
+  log(event: Omit<DataSetEvent, 'ts'> & { ts?: DataSetEvent['ts'] }) {
     if (this.isClosed) {
       return;
     }
 
-    this.queue.push(event);
+    this.queue.push({
+      // If no timestamp is provided, use the current time
+      ts: new Date().getTime() * 1_000_000, // To nanoseconds
+      ...event,
+    });
 
     if (this.queue.length >= MAX_EVENTS_PER_BATCH) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
