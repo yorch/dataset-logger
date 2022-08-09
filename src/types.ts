@@ -1,3 +1,5 @@
+import type { Counter, Gauge, Registry } from 'prom-client';
+
 export enum DataSetEventSeverity {
   INFO = 3,
   WARN = 4,
@@ -28,9 +30,18 @@ export type DataSetSessionInfo = {
 
 export type DataSetLoggerOptions = {
   apiKey: string;
+  enableMetrics?: boolean;
+  metricsPrefix?: string;
+  metricsRegistry?: Registry;
   serverUrl?: string;
   sessionInfo?: DataSetSessionInfo;
   shouldFlattenAttributes?: boolean;
   onErrorHandler?: (error: Error) => void;
   onSuccessHandler?: (response: unknown) => void;
+};
+
+export type Metrics = {
+  currentQueueLength: Gauge<string>;
+  failedRequestsCounter: Counter<string>;
+  successRequestsCounter: Counter<string>;
 };
