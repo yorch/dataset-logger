@@ -1,5 +1,6 @@
 import got from 'got';
 import { createUrl } from './create-url';
+import { flattenNestedObject } from './flatten-nested-object';
 
 enum ADD_EVENT_API_STATUS {
   SUCCESS = 'success',
@@ -38,6 +39,7 @@ export type DataSetLoggerOptions = {
   apiKey: string;
   serverUrl?: string;
   sessionInfo?: DataSetSessionInfo;
+  shouldFlattenAttributes?: boolean;
   onErrorHandler?: (error: Error) => void;
   onSuccessHandler?: (response: unknown) => void;
 };
@@ -78,6 +80,8 @@ export class DataSetLogger {
   // the changes to sessionInfo and associate the original sessionInfo with all events for that session.
   private sessionInfo?: DataSetSessionInfo;
 
+  private shouldFlattenAttributes = false;
+
   private timeoutId: NodeJS.Timeout | null = null;
 
   private url: string;
@@ -94,6 +98,8 @@ export class DataSetLogger {
     }
 
     this.apiKey = options.apiKey;
+
+    this.shouldFlattenAttributes = options.shouldFlattenAttributes ?? false;
 
     this.sessionInfo = options.sessionInfo;
 
@@ -116,15 +122,21 @@ export class DataSetLogger {
     this.setTimeout();
   }
 
-  log(event: Omit<DataSetEvent, 'ts'> & { ts?: DataSetEvent['ts'] }) {
+  log(event: (Omit<DataSetEvent, 'ts'> & { ts?: DataSetEvent['ts'] }) | string) {
     if (this.isClosed) {
       return;
     }
 
+    const rawEvent = typeof event === 'string' ? { attrs: { message: event } } : event;
+
+    const { attrs, sev, ...restOfEvent } = rawEvent;
+
     this.queue.push({
       // If no timestamp is provided, use the current time
       ts: new Date().getTime() * 1_000_000, // To nanoseconds
-      ...event,
+      attrs: this.shouldFlattenAttributes ? flattenNestedObject(attrs) : attrs,
+      sev: sev ?? DataSetEventSeverity.INFO,
+      ...restOfEvent,
     });
 
     if (this.queue.length >= MAX_EVENTS_PER_BATCH) {

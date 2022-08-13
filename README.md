@@ -23,9 +23,41 @@ yarn add dataset-logger
 ## Usage
 
 ```ts
-import { DataSetLogger } from 'dataset-logger';
+import { DataSetEventSeverity, DataSetLogger } from 'dataset-logger';
+
+const options = {
+  // API Key is required.
+  apiKey: 'YOUR DATASET WRITE LOGS API KEY',
+  // SessionInfo is optional, it can be used to specify fields associated with the uploading process and
+  // are appended to all of your events. These fields can then be used when querying the uploaded events.
+  sessionInfo: {
+    // Should generally specify at least a `serverHost` field, containing the hostname or other server
+    // identifier. DataSet uses this value to organize events from different servers / sources.
+    serverHost: 'front-1',
+    serverType: 'frontend',
+    region: 'us-east-1',
+    application: 'some application name',
+  },
+};
 
 const logger = new DataSetLogger(options);
+
+// Simple events can be sent like the following:
+logger.log('record retrieved');
+
+// Or more complex events can be sent like:
+logger.log({
+  sev: DataSetEventSeverity.INFO,
+  attrs: {
+    message: 'record retrieved',
+    recordId: 39217,
+    latency: 19.4,
+    length: 39207,
+  },
+});
+
+// Once done, make sure to close the logger so any remaining events are flushed
+await logger.close();
 ```
 
 ## API
@@ -35,6 +67,68 @@ const logger = new DataSetLogger(options);
 #### options
 
 Type: `object`
+
+##### apiKey (required)
+
+Type: `string`
+
+##### serverUrl (optional)
+
+Type: `string'
+
+##### sessionInfo (optional)
+
+Type: `object`
+
+##### shouldFlattenAttributes (optional)
+
+Type: `boolean`
+
+If nested attributes should be flatten with dot notation for easier handling when working with the events in DataSet.
+
+The following event payload:
+
+```js
+attrs: {
+  message: 'some message',
+  record: {
+    id: 'some id',
+    name: 'some name',
+    user: {
+      id: 'user id',
+      name: 'user name',
+    },
+  },
+},
+```
+
+Would be converted to the following before sending it to DataSet:
+
+```js
+attrs: {
+  message: 'some message',
+  'record.id': 'some id',
+  'record.name': 'some name',
+  'record.user.id': 'user id',
+  'record.user.name': 'user name',
+},
+```
+
+##### onErrorHandler (optional)
+
+Type: `function`
+
+```js
+(error: Error) => void
+```
+
+##### onSuccessHandler (optional)
+
+Type: `function`
+
+```js
+(response: unknown) => void;
+```
 
 [build-img]:https://github.com/yorch/dataset-logger/actions/workflows/release.yml/badge.svg
 [build-url]:https://github.com/yorch/dataset-logger/actions/workflows/release.yml
