@@ -68,6 +68,68 @@ await logger.close();
 
 Type: `object`
 
+##### apiKey (required)
+
+Type: `string`
+
+##### serverUrl (optional)
+
+Type: `string'
+
+##### sessionInfo (optional)
+
+Type: `object`
+
+##### shouldFlattenAttributes (optional)
+
+Type: `boolean`
+
+If nested attributes should be flatten with dot notation for easier handling when working with the events in DataSet.
+
+The following event payload:
+
+```js
+attrs: {
+  message: 'some message',
+  record: {
+    id: 'some id',
+    name: 'some name',
+    user: {
+      id: 'user id',
+      name: 'user name',
+    },
+  },
+},
+```
+
+Would be converted to the following before sending it to DataSet:
+
+```js
+attrs: {
+  message: 'some message',
+  'record.id': 'some id',
+  'record.name': 'some name',
+  'record.user.id': 'user id',
+  'record.user.name': 'user name',
+},
+```
+
+##### onErrorHandler (optional)
+
+Type: `function`
+
+```js
+(error: Error) => void
+```
+
+##### onSuccessHandler (optional)
+
+Type: `function`
+
+```js
+(response: unknown) => void;
+```
+
 [build-img]:https://github.com/yorch/dataset-logger/actions/workflows/release.yml/badge.svg
 [build-url]:https://github.com/yorch/dataset-logger/actions/workflows/release.yml
 [downloads-img]:https://img.shields.io/npm/dt/dataset-logger
