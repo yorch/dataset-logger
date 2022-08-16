@@ -50,7 +50,7 @@ export class DataSetLogger {
 
     this.shouldFlattenAttributes = options.shouldFlattenAttributes ?? false;
 
-    this.sessionInfo = options.sessionInfo;
+    this.sessionInfo = this.shouldFlattenAttributes ? flattenNestedObject(options.sessionInfo) : options.sessionInfo;
 
     this.serverUrl = options.serverUrl || DEFAULT_DATASET_URL;
 
