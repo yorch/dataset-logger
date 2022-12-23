@@ -1,8 +1,8 @@
 import got from 'got';
-import { ADD_EVENT_API_STATUS, DEFAULT_DATASET_URL, ENDPOINT, MAX_EVENTS_PER_BATCH } from './constants';
-import { createUrl } from './create-url';
+import { API_RESPONSE_STATUS, DEFAULT_DATASET_URL, ENDPOINT_ADD_EVENTS, MAX_EVENTS_PER_BATCH } from './constants';
 import { flattenNestedObject } from './flatten-nested-object';
 import { DataSetEvent, DataSetEventSeverity, DataSetLoggerOptions, DataSetSessionInfo } from './types';
+import { buildError, createUrl } from './utils';
 
 export class DataSetLogger {
   private apiKey: string;
@@ -57,12 +57,10 @@ export class DataSetLogger {
     this.onErrorHandler = options.onErrorHandler || (() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
     this.onSuccessHandler = options.onSuccessHandler || (() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
 
-    const [err, url] = createUrl(this.serverUrl, ENDPOINT);
+    const [error, url] = createUrl(this.serverUrl, ENDPOINT_ADD_EVENTS);
 
-    if (err || !url) {
-      const errorMessage = ['Could not build the URL', err?.message].filter(Boolean).join('. ');
-
-      throw new Error(errorMessage);
+    if (error || !url) {
+      throw buildError('Could not build the URL', error);
     }
 
     this.url = url;
@@ -147,12 +145,12 @@ export class DataSetLogger {
               // @ts-expect-error TODO: Fix response body type
               const { message, status } = response.body;
 
-              if (status !== ADD_EVENT_API_STATUS.SUCCESS && status !== ADD_EVENT_API_STATUS.BAD_PARAM) {
+              if (status !== API_RESPONSE_STATUS.SUCCESS && status !== API_RESPONSE_STATUS.BAD_PARAM) {
                 // logger.debug({ status, url: this.url }, `addEvent API request was not successful, retrying...`);
                 return retryWithMergedOptions({});
               }
 
-              // if (status === ADD_EVENT_API_STATUS.SUCCESS) {
+              // if (status === API_RESPONSE_STATUS.SUCCESS) {
               //   logger.debug({ url: this.url }, 'Successfully sent API request');
               // }
 
@@ -164,7 +162,7 @@ export class DataSetLogger {
 
       const { status } = body;
 
-      const isSuccess = status === ADD_EVENT_API_STATUS.SUCCESS;
+      const isSuccess = status === API_RESPONSE_STATUS.SUCCESS;
 
       if (isSuccess) {
         this.onSuccessHandler(body);
@@ -176,7 +174,11 @@ export class DataSetLogger {
         return false;
       }
     } catch (error) {
-      this.onErrorHandler(error as Error);
+      if (error instanceof Error) {
+        this.onErrorHandler(error);
+      } else {
+        this.onErrorHandler(new Error((error as string).toString()));
+      }
 
       return false;
     }

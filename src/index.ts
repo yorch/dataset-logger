@@ -7,3 +7,4 @@ export {
   DataSetLoggerOptions,
   DataSetSessionInfo,
 } from './types';
+export { uploadLogs } from './upload-logs';
