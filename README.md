@@ -77,7 +77,7 @@ It uses the [`uploadLogs` API](https://app.scalyr.com/help/api-uploadLogs), it's
 recommended to read more about before using it.
 
 ```ts
-import { uploadLogs } from './upload-logs';
+import { uploadLogs } from 'dataset-logger';
 
 // Can receive the full string text as a parameter:
 
