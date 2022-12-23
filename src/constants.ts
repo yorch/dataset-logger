@@ -1,4 +1,4 @@
-export enum ADD_EVENT_API_STATUS {
+export enum API_RESPONSE_STATUS {
   SUCCESS = 'success',
   BAD_PARAM = 'error/client/badParam',
 }
@@ -10,6 +10,8 @@ export enum ADD_EVENT_API_STATUS {
 // TODO: Improve logic on how to split events into batches to account for size rather than events length
 export const MAX_EVENTS_PER_BATCH = 200;
 
-export const ENDPOINT = '/api/addEvents';
-
 export const DEFAULT_DATASET_URL = 'https://api.scalyr.com';
+
+export const ENDPOINT_ADD_EVENTS = '/api/addEvents';
+
+export const ENDPOINT_UPLOAD_LOGS = '/api/uploadLogs';
