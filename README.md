@@ -67,6 +67,50 @@ logger.log({
 await logger.close();
 ```
 
+### To upload unstructured logs
+
+This package also exports a small util function that allows to upload unstructured,
+plain-text logs. It can be used for lightweight integrations, and to upload batches
+of data from stateless environments.
+
+It uses the [`uploadLogs` API](https://app.scalyr.com/help/api-uploadLogs), it's
+recommended to read more about before using it.
+
+```ts
+import { uploadLogs } from './upload-logs';
+
+// Can receive the full string text as a parameter:
+
+(async () => {
+  await uploadLogs({
+    apiKey: 'YOUR DATASET WRITE LOGS API KEY',
+    body: '{test: 123, field1: "value", field2: "value2"}',
+    logfile: 'some-json.log',
+    parser: 'json',
+    sessionInfo: {
+      serverHost: 'test-host',
+      region: 'us-east',
+    },
+  });
+})();
+
+// Or can also receive a file full path, which will read and send its content:
+
+(async () => {
+  await uploadLogs({
+    apiKey: 'YOUR DATASET WRITE LOGS API KEY',
+    filePath: '/Users/user/some-json.log',
+    logfile: 'some-json.log',
+    parser: 'json',
+    sessionInfo: {
+      serverHost: 'test-host',
+      region: 'us-east',
+    },
+  });
+})();
+
+```
+
 ## API
 
 ### DataSetLogger(options?)
@@ -75,19 +119,19 @@ await logger.close();
 
 Type: `object`
 
-##### options.apiKey (required)
+#### options.apiKey (required)
 
 Type: `string`
 
-##### options.serverUrl (optional)
+#### options.serverUrl (optional)
 
 Type: `string'
 
-##### options.sessionInfo (optional)
+#### options.sessionInfo (optional)
 
 Type: `object`
 
-##### options.shouldFlattenAttributes (optional)
+#### options.shouldFlattenAttributes (optional)
 
 Type: `boolean`
 
@@ -123,7 +167,7 @@ attrs: {
 
 See [`flatten-nested-object.spec.ts`](test/flatten-nested-object.spec.ts) for more cases.
 
-##### options.onErrorHandler (optional)
+#### options.onErrorHandler (optional)
 
 Type: `function`
 
@@ -131,7 +175,7 @@ Type: `function`
 (error: Error) => void
 ```
 
-##### options.onSuccessHandler (optional)
+#### options.onSuccessHandler (optional)
 
 Type: `function`
 
