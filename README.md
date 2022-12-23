@@ -12,9 +12,13 @@
 
 ## Install
 
+With NPM:
+
 ```sh
 npm install dataset-logger
 ```
+
+Or if you use Yarn:
 
 ```sh
 yarn add dataset-logger
@@ -42,12 +46,15 @@ const options = {
 
 const logger = new DataSetLogger(options);
 
-// Simple events can be sent like the following:
+// Simple events can be sent by just passing a string message:
 logger.log('record retrieved');
 
 // Or more complex events can be sent like:
 logger.log({
+  // This refers to the severity of the event
+  // Possible severities are `INFO`, `WARN`, `ERROR`, `DANGER`
   sev: DataSetEventSeverity.INFO,
+  // These are the attributes of the event, and can include nested properties
   attrs: {
     message: 'record retrieved',
     recordId: 39217,
@@ -68,19 +75,19 @@ await logger.close();
 
 Type: `object`
 
-##### apiKey (required)
+##### options.apiKey (required)
 
 Type: `string`
 
-##### serverUrl (optional)
+##### options.serverUrl (optional)
 
 Type: `string'
 
-##### sessionInfo (optional)
+##### options.sessionInfo (optional)
 
 Type: `object`
 
-##### shouldFlattenAttributes (optional)
+##### options.shouldFlattenAttributes (optional)
 
 Type: `boolean`
 
@@ -114,7 +121,9 @@ attrs: {
 },
 ```
 
-##### onErrorHandler (optional)
+See [`flatten-nested-object.spec.ts`](test/flatten-nested-object.spec.ts) for more cases.
+
+##### options.onErrorHandler (optional)
 
 Type: `function`
 
@@ -122,7 +131,7 @@ Type: `function`
 (error: Error) => void
 ```
 
-##### onSuccessHandler (optional)
+##### options.onSuccessHandler (optional)
 
 Type: `function`
 
