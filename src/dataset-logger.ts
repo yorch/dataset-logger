@@ -1,17 +1,32 @@
 import got from 'got';
+import { Counter, Gauge, Registry } from 'prom-client';
 import { ADD_EVENT_API_STATUS, DEFAULT_DATASET_URL, ENDPOINT, MAX_EVENTS_PER_BATCH } from './constants';
 import { createUrl } from './create-url';
 import { flattenNestedObject } from './flatten-nested-object';
-import { DataSetEvent, DataSetEventSeverity, DataSetLoggerOptions, DataSetSessionInfo } from './types';
+import { DataSetEvent, DataSetEventSeverity, DataSetLoggerOptions, DataSetSessionInfo, Metrics } from './types';
 
 export class DataSetLogger {
   private apiKey: string;
 
-  private serverUrl: string;
+  private batchingTime = 3_000;
+
+  private enableMetrics: boolean;
+
+  private isClosed = false;
+
+  private metrics?: Metrics;
+
+  private metricsRegistry?: Registry;
+
+  private metricsPrefix: string;
+
+  private queue: DataSetEvent[] = [];
 
   private onErrorHandler: NonNullable<DataSetLoggerOptions['onErrorHandler']>;
 
   private onSuccessHandler: NonNullable<DataSetLoggerOptions['onSuccessHandler']>;
+
+  private serverUrl: string;
 
   // Arbitrary string (up to 200 chars) that uniquely defines the lifetime of the upload process.
   // An easy way to create the session parameter is to generate a UUID at process startup, then store the
@@ -35,18 +50,18 @@ export class DataSetLogger {
 
   private url: string;
 
-  private queue: DataSetEvent[] = [];
-
-  private isClosed = false;
-
-  private batchingTime = 3_000;
-
   constructor(options: DataSetLoggerOptions) {
     if (!options.apiKey) {
       throw new Error('apiKey is required');
     }
 
     this.apiKey = options.apiKey;
+
+    this.enableMetrics = options.enableMetrics ?? false;
+
+    this.metricsPrefix = options.metricsPrefix ?? 'dataset_logger_';
+
+    this.metricsRegistry = options.metricsRegistry;
 
     this.shouldFlattenAttributes = options.shouldFlattenAttributes ?? false;
 
@@ -66,6 +81,35 @@ export class DataSetLogger {
     }
 
     this.url = url;
+
+    if (this.enableMetrics) {
+      const registry = this.metricsRegistry
+        ? {
+            registers: [this.metricsRegistry],
+          }
+        : {};
+      const queue = this.queue;
+      this.metrics = {
+        currentQueueLength: new Gauge({
+          name: `${this.metricsPrefix}queue_length`,
+          help: 'current length of the queue of events to be send to DataSet',
+          collect() {
+            this.set(queue.length);
+          },
+          ...registry,
+        }),
+        failedRequestsCounter: new Counter({
+          name: `${this.metricsPrefix}error_requests`,
+          help: 'number of failed requests to upload logs to DataSet',
+          ...registry,
+        }),
+        successRequestsCounter: new Counter({
+          name: `${this.metricsPrefix}success_requests`,
+          help: 'number of successful requests to upload logs to DataSet',
+          ...registry,
+        }),
+      };
+    }
 
     // Init sending events
     this.setTimeout();
@@ -167,15 +211,18 @@ export class DataSetLogger {
       const isSuccess = status === ADD_EVENT_API_STATUS.SUCCESS;
 
       if (isSuccess) {
+        this.metrics?.successRequestsCounter.inc();
         this.onSuccessHandler(body);
 
         return true;
       } else {
+        this.metrics?.failedRequestsCounter.inc();
         this.onErrorHandler(new Error(body.message));
 
         return false;
       }
     } catch (error) {
+      this.metrics?.failedRequestsCounter.inc();
       this.onErrorHandler(error as Error);
 
       return false;
